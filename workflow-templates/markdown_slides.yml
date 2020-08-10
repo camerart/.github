@@ -1,0 +1,57 @@
+name: Beamer Slides
+
+on: [push]
+
+jobs:
+
+  markdwon_to_beamer:
+    runs-on: ubuntu-latest
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Convert Markdown to beamer
+      uses: fredqi/pandoc-action@master
+      with:
+        source_files: |
+          README.md
+        format: beamer
+        options: >-
+          -f markdown+raw_tex
+          --toc
+          --template conf/latex.tmpl
+          --slide-level 2
+
+    - name: Compile beamer slides
+      uses: fredqi/tl-action@xelatex
+      with:
+        tex_files: |
+          README.tex
+        options: >-
+          -cd
+          -pdfxe
+          -nobibtex
+          -file-line-error
+          -halt-on-error
+          -interaction=nonstopmode          
+
+    - name: Upload slides
+      env:
+        DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+      run: |
+        export PATH=.github/bin:$PATH
+        dropbox_upload README.pdf /devel
+
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@master
+      if: $${{ success() }}
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_ICON_EMOJI: ':male-teacher:'
+        SLACK_CHANNEL: teaching
+        SLACK_COLOR: '#5319E7'
+        SLACK_USERNAME: GitHub Action Bot
+        SLACK_TITLE: Course
+        SLACK_MESSAGE: "Course slides have been converted, compiled and uploaded."
+        SLACK_FOOTER: ''

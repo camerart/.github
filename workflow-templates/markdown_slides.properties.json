@@ -1,0 +1,7 @@
+{
+    "name": "Markdown to Slides",
+    "description": "camerart workflow template for converting markdown slides.",
+    "iconName": "beamer",
+    "categories": ["Markdown"],
+    "filePatterns": ["^slides/"]
+}
